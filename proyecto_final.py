@@ -11,7 +11,15 @@ reserved = {
     "true": "BOOLVAL",
     "false": "BOOLVAL",
     "if": "IF",
-    "else": "ELSE"
+    "else": "ELSE",
+    "and": "AND",
+    "or": "OR",
+    "==": "EQUAL",
+    "!=": "NOTEQUAL",
+    ">": "GREATER",
+    "<": "LESS",
+    ">=": "GREQUAL",
+    "<=": "LEQUAL"
 }
 
 
@@ -20,11 +28,9 @@ tokens = [
 ]
 tokens.extend(reserved.values())
 
-literals = ['=', '+', '-', ';', '(', ')', '{', '}', '==', '!=', '>', '<', '>=', '<=']
+literals = ['=', '+', '-', '*', '/', '^', ';', '(', ')', '{', '}']
 
 # Tokens
-
-
 def t_NAME(t):
     r'[a-zA-Z_]+[a-zA-Z0-9]*'  # r'[a-eg-hj-oq-z]'
     if t.value in reserved:
@@ -173,7 +179,6 @@ def p_statement_assign(p):
     n.childrens.append(p[3])
     p[0] = n
 
-
 def p_expression_group(p):
     "expression : '(' expression ')'"
     p[0] = p[2]
@@ -181,7 +186,10 @@ def p_expression_group(p):
 
 def p_expression_binop(p):
     '''expression : expression '+' expression
-                  | expression '-' expression'''
+                  | expression '-' expression
+                  | expression '*' expression
+                  | expression '/' expression
+                  | expression '^' expression'''
     if p[2] == '+':
         n = Node()
         n.type = '+'
@@ -191,6 +199,24 @@ def p_expression_binop(p):
     elif p[2] == '-':
         n = Node()
         n.type = '-'
+        n.childrens.append(p[1])
+        n.childrens.append(p[3])
+        p[0] = n
+    elif p[2] == '*':
+        n = Node()
+        n.type = '*'
+        n.childrens.append(p[1])
+        n.childrens.append(p[3])
+        p[0] = n
+    elif p[2] == '/':
+        n = Node()
+        n.type = '/'
+        n.childrens.append(p[1])
+        n.childrens.append(p[3])
+        p[0] = n
+    elif p[2] == '^':
+        n = Node()
+        n.type = '^'
         n.childrens.append(p[1])
         n.childrens.append(p[3])
         p[0] = n
@@ -217,12 +243,70 @@ def p_expression_boolval(p):
     p[0] = p[1]
 
 
+
 def p_bool_expression(p):
-    "boolexp : BOOLVAL"
-    n = Node()
-    n.type = 'BOOLVAL'
-    n.val = (p[1] == 'true')
-    p[0] = n
+    '''boolexp : BOOLVAL
+                | expression EQUAL expression
+                | expression NOTEQUAL expression
+                | numexp GREATER numexp
+                | numexp LESS numexp
+                | numexp GREQUAL numexp
+                | numexp LEQUAL numexp
+                | boolexp AND boolexp
+                | boolexp OR boolexp'''
+    if len(p) == 2:
+        n = Node()
+        n.type = 'BOOLVAL'
+        n.val = (p[1] == 'true')
+        p[0] = n
+    elif p[2] == '==':
+        n = Node()
+        n.type = '=='
+        n.childrens.append(p[1])
+        n.childrens.append(p[3])
+        p[0] = n
+    elif p[2] == '!=':
+        n = Node()
+        n.type = '!='
+        n.childrens.append(p[1])
+        n.childrens.append(p[3])
+        p[0] = n
+    elif p[2] == '>':
+        n = Node()
+        n.type = '>'
+        n.childrens.append(p[1])
+        n.childrens.append(p[3])
+        p[0] = n
+    elif p[2] == '<':
+        n = Node()
+        n.type = '<'
+        n.childrens.append(p[1])
+        n.childrens.append(p[3])
+        p[0] = n
+    elif p[2] == '>=':
+        n = Node()
+        n.type = '>='
+        n.childrens.append(p[1])
+        n.childrens.append(p[3])
+        p[0] = n
+    elif p[2] == '<=':
+        n = Node()
+        n.type = '<='
+        n.childrens.append(p[1])
+        n.childrens.append(p[3])
+        p[0] = n
+    elif p[2] == 'and':
+        n = Node()
+        n.type = 'AND'
+        n.childrens.append(p[1])
+        n.childrens.append(p[3])
+        p[0] = n
+    elif p[2] == 'or':
+        n = Node()
+        n.type = 'OR'
+        n.childrens.append(p[1])
+        n.childrens.append(p[3])
+        p[0] = n
 
 
 def p_expression_name(p):
@@ -268,6 +352,30 @@ def genTAC(node):
         varCounter = varCounter + 1
         print(tempVar + " := " +
               genTAC(node.childrens[0]) + " + " + genTAC(node.childrens[1]))
+        return tempVar
+    elif (node.type == "-"):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              genTAC(node.childrens[0]) + " - " + genTAC(node.childrens[1]))
+        return tempVar
+    elif (node.type == "*"):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              genTAC(node.childrens[0]) + " * " + genTAC(node.childrens[1]))
+        return tempVar
+    elif (node.type == "/"):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              genTAC(node.childrens[0]) + " / " + genTAC(node.childrens[1]))
+        return tempVar
+    elif (node.type == "^"):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              genTAC(node.childrens[0]) + " ^ " + genTAC(node.childrens[1]))
         return tempVar
     elif (node.type == "PRINT"):
         print("PRINT " + genTAC(node.childrens[0]))
