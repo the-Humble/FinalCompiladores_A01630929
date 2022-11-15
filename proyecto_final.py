@@ -157,7 +157,7 @@ def p_statement_print(p):
 
 
 def p_statement_if_block(p):
-    "statement : ifblock elifblock elseblock"
+    "statement : ifblock elifrecursive elseblock"
     n = Node()
     n.children.append(p[1])
     n.children.append(p[2])
@@ -184,22 +184,29 @@ def p_statement_else(p):
         p[0] = n
     else:
         pass
-    
 
-def p_statement_elif(p):
-    '''elifblock : ELIF "(" boolexp ")" "{" stmts "}"
-                | '''
-
-    if len(p) >= 8:
+def p_statement_elifrecursive(p):
+    '''elifrecursive : elifrecursive elifblock
+                     |'''
+    if len(p) == 3:
         n = Node()
-        n.type = 'ELIF'
-        n.children.append(p[3])
-        n2 = Node()
-        n2.children.extend(p[6])
-        n.children.append(n2)
+        if p[1] != None:
+            n.children.append(p[1])
+        n.children.append(p[2])
         p[0] = n
     else:
         pass
+    
+
+def p_statement_elif(p):
+    '''elifblock : ELIF "(" boolexp ")" "{" stmts "}"'''
+    n = Node()
+    n.type = 'ELIF'
+    n.children.append(p[3])
+    n2 = Node()
+    n2.children.extend(p[6])
+    n.children.append(n2)
+    p[0] = n
 
 def p_statement_assign(p):
     'statement : NAME "=" expression ";"'
@@ -433,36 +440,42 @@ def genTAC(node):
         varCounter = varCounter + 1
         print(tempVar + " := " +
               genTAC(node.children[0]) + " != " + genTAC(node.children[1]))
+        return tempVar
     elif (node.type == 'GT'):
         tempVar = "t" + str(varCounter)
         varCounter = varCounter + 1
         print(tempVar + " := " +
               genTAC(node.children[0]) + " > " + genTAC(node.children[1]))
+        return tempVar
     elif (node.type == 'LT'):
         tempVar = "t" + str(varCounter)
         varCounter = varCounter + 1
         print(tempVar + " := " +
               genTAC(node.children[0]) + " < " + genTAC(node.children[1]))
+        return tempVar
     elif (node.type == 'GET'):
         tempVar = "t" + str(varCounter)
         varCounter = varCounter + 1
         print(tempVar + " := " +
               genTAC(node.children[0]) + " >= " + genTAC(node.children[1]))
+        return tempVar
     elif (node.type == 'LET'):
         tempVar = "t" + str(varCounter)
         varCounter = varCounter + 1
         print(tempVar + " := " +
               genTAC(node.children[0]) + " <= " + genTAC(node.children[1]))
+        return tempVar
     elif (node.type == 'AND'):
         tempVar = "t" + str(varCounter)
-        varCounter = varCounter + 1
         print(tempVar + " := " +
               genTAC(node.children[0]) + " AND " + genTAC(node.children[1]))
+        return tempVar
     elif (node.type == 'OR'):
         tempVar = "t" + str(varCounter)
         varCounter = varCounter + 1
         print(tempVar + " := " +
               genTAC(node.children[0]) + " OR " + genTAC(node.children[1]))
+        return tempVar
     elif (node.type == "PRINT"):
         print("PRINT " + genTAC(node.children[0]))
     elif (node.type == "IF"):
