@@ -106,7 +106,6 @@ def p_prog(p):
     global abstractTree
     abstractTree = Node()
     abstractTree.type = 'root'
-    print(p)
     abstractTree.children.extend(p[1])
 
 
@@ -158,11 +157,12 @@ def p_statement_print(p):
 
 
 def p_statement_if_block(p):
-    "statement : ifblock elseblock"
+    "statement : ifblock elifblock elseblock"
     n = Node()
-    p[0] = p[1]
-    if(p[2] != None):
-        p[0].children.append(p[2])
+    n.children.append(p[1])
+    n.children.append(p[2])
+    n.children.append(p[3])
+    p[0] = n
 
 def p_statement_if(p):
     'ifblock : IF "(" boolexp ")" "{" stmts "}"'
@@ -181,6 +181,22 @@ def p_statement_else(p):
         n = Node()
         n.type = 'ELSE'
         n.children.extend(p[3])
+        p[0] = n
+    else:
+        pass
+    
+
+def p_statement_elif(p):
+    '''elifblock : ELIF "(" boolexp ")" "{" stmts "}"
+                | '''
+
+    if len(p) >= 8:
+        n = Node()
+        n.type = 'ELIF'
+        n.children.append(p[3])
+        n2 = Node()
+        n2.children.extend(p[6])
+        n.children.append(n2)
         p[0] = n
     else:
         pass
@@ -463,6 +479,16 @@ def genTAC(node):
         tempLabel = "l" + str(labelCounter)
         labelCounter = labelCounter + 1
         print("gotoLabelElse " + tempLabel)
+        genTAC(node.children[1])
+        print(tempLabel)
+    elif (node.type == "ELIF"):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              str(genTAC((node.children[0]))))
+        tempLabel = "l" + str(labelCounter)
+        labelCounter = labelCounter + 1
+        print("gotoLabelElif " + tempVar + " " + tempLabel)
         genTAC(node.children[1])
         print(tempLabel)
     else:
