@@ -160,10 +160,9 @@ def p_statement_print(p):
 def p_statement_if_block(p):
     "statement : ifblock elseblock"
     n = Node()
-    n.children.append(p[1])
+    p[0] = p[1]
     if(p[2] != None):
-        n.children.append(p[2])
-    p[0] = n
+        p[0].children.append(p[2])
 
 def p_statement_if(p):
     'ifblock : IF "(" boolexp ")" "{" stmts "}"'
@@ -181,7 +180,7 @@ def p_statement_else(p):
     if len(p) >= 4:
         n = Node()
         n.type = 'ELSE'
-        n.children.append(p[3])
+        n.children.extend(p[3])
         p[0] = n
     else:
         pass
@@ -460,9 +459,16 @@ def genTAC(node):
         print("gotoLabelIf " + tempVar + " " + tempLabel)
         genTAC(node.children[1])
         print(tempLabel)
+    elif (node.type == "ELSE"):
+        tempLabel = "l" + str(labelCounter)
+        labelCounter = labelCounter + 1
+        print("gotoLabelElse " + tempLabel)
+        genTAC(node.children[1])
+        print(tempLabel)
     else:
         for child in node.children:
-            genTAC(child)
+            if child.type != None:
+                genTAC(child)
 
 
 print("\ntac:\n")
