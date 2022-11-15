@@ -371,7 +371,7 @@ def p_expression_name(p):
 
 def p_error(p):
     if p:
-        print("Syntax error at '%s'" % p.value)
+        print("Syntax error at '%s' in line '%d'" % (p.value, lexer.lineno))
     else:
         print("Syntax error at EOF")
 
