@@ -122,31 +122,78 @@ def p_statements_recursion(p):
 
 
 def p_dcl_declare_int(p):
-    'statement : INTDCL NAME ";"'
-    symbolsTable["table"][p[2]] = {"type": "INT", "value": 0}
-    n = Node()
-    n.type = "INT_DCL"
-    n.val = p[2]
-    p[0] = n
+    '''statement : INTDCL NAME "=" numexp ";"
+                 | INTDCL NAME ";"'''
+    if len(p) > 5:
+        symbolsTable["table"][p[2]] = {"type": "INT", "value": 0}
+        n = Node()
+        n.type = "INT_DCL"
+        n.val = p[2]
+        n2 = Node()
+        n2.type = 'ASSIGN'
+        n3 = Node()
+        n3.type = 'ID'
+        n3.val = p[2]
+        n2.children.append(n3)
+        n2.children.append(p[4])
+        n.children.append(n2)
+        p[0] = n
+    else:
+        symbolsTable["table"][p[2]] = {"type": "INT", "value": 0}
+        n = Node()
+        n.type = "INT_DCL"
+        n.val = p[2]
+        p[0] = n
 
 
 def p_statement_declare_float(p):
-    'statement : FLOATDCL NAME ";"'
-    symbolsTable["table"][p[2]] = {"type": "FLOAT", "value": 0}
-    n = Node()
-    n.type = "FLOAT_DCL"
-    n.val = p[2]
-    p[0] = n
+    '''statement : FLOATDCL NAME "=" numexp ";"
+                 | FLOATDCL NAME ";"'''
+    if len(p) > 5:
+        symbolsTable["table"][p[2]] = {"type": "FLOAT", "value": 0}
+        n = Node()
+        n.type = "FLOAT_DCL"
+        n.val = p[2]
+        n2 = Node()
+        n2.type = 'ASSIGN'
+        n3 = Node()
+        n3.type = 'ID'
+        n3.val = p[2]
+        n2.children.append(n3)
+        n2.children.append(p[4])
+        n.children.append(n2)
+        p[0] = n
+    else:
+        symbolsTable["table"][p[2]] = {"type": "FLOAT", "value": 0}
+        n = Node()
+        n.type = "FLOAT_DCL"
+        n.val = p[2]
+        p[0] = n
 
 
 def p_statement_declare_bool(p):
-    'statement : BOOLDCL NAME ";"'
-    symbolsTable["table"][p[2]] = {"type": "BOOLEAN", "value": False}
-    n = Node()
-    n.type = "BOOL_DCL"
-    n.val = p[2]
-    p[0] = n
-
+    '''statement : BOOLDCL NAME "=" boolexp ";"
+                 | BOOLDCL NAME ";"'''
+    if len(p) > 5:
+        symbolsTable["table"][p[2]] = {"type": "BOOLEAN", "value": False}
+        n = Node()
+        n.type = "BOOL_DCL"
+        n.val = p[2]
+        n2 = Node()
+        n2.type = 'ASSIGN'
+        n3 = Node()
+        n3.type = 'ID'
+        n3.val = p[2]
+        n2.children.append(n3)
+        n2.children.append(p[4])
+        n.children.append(n2)
+        p[0] = n
+    else:
+        symbolsTable["table"][p[2]] = {"type": "BOOLEAN", "value": False}
+        n = Node()
+        n.type = "BOOL_DCL"
+        n.val = p[2]
+        p[0] = n
 
 def p_statement_print(p):
     'statement : PRINT expression ";"'
@@ -209,7 +256,13 @@ def p_statement_elif(p):
     p[0] = n
 
 def p_statement_assign(p):
-    'statement : NAME "=" expression ";"'
+    '''statement : intassign
+                       | floatassign
+                       | boolassign'''
+    p[0] = p[1]
+
+def p_statement_intassign(p):
+    'intassign : NAME "=" numexp ";"'
     if p[1] not in symbolsTable["table"]:
         print("You must declare a variable before using it")
     n = Node()
@@ -222,7 +275,40 @@ def p_statement_assign(p):
         n.children.append(n1)
     else:
         print("Error undeclared variable")
+    n.children.append(p[3])
+    p[0] = n
 
+def p_statement_floatassign(p):
+    'floatassign : NAME "=" numexp ";"'
+    if p[1] not in symbolsTable["table"]:
+        print("You must declare a variable before using it")
+    n = Node()
+    n.type = 'ASSIGN'
+    ##n.children.append(p[1])
+    if p[1] in symbolsTable["table"]:
+        n1 = Node()
+        n1.type = 'ID'
+        n1.val = p[1]
+        n.children.append(n1)
+    else:
+        print("Error undeclared variable")
+    n.children.append(p[3])
+    p[0] = n
+
+def p_statement_boolassign(p):
+    'boolassign : NAME "=" boolexp ";"'
+    if p[1] not in symbolsTable["table"]:
+        print("You must declare a variable before using it")
+    n = Node()
+    n.type = 'ASSIGN'
+    ##n.children.append(p[1])
+    if p[1] in symbolsTable["table"]:
+        n1 = Node()
+        n1.type = 'ID'
+        n1.val = p[1]
+        n.children.append(n1)
+    else:
+        print("Error undeclared variable")
     n.children.append(p[3])
     p[0] = n
 

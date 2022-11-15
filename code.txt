@@ -1,0 +1,11 @@
+boolean t = true;
+boolean f;
+f = false;
+
+float num1 = 15.667;
+float num2;
+num2 = 13.45;
+
+int num3 = 14.7;
+int num4;
+num2 = 10;
