@@ -184,12 +184,17 @@ def p_expression_group(p):
     p[0] = p[2]
 
 
-def p_expression_binop(p):
-    '''expression : expression '+' expression
-                  | expression '-' expression
-                  | expression '*' expression
-                  | expression '/' expression
-                  | expression '^' expression'''
+
+def p_num_expression(p):
+    "expression : numexp"
+    p[0] = p[1]
+
+def p_numexp_binop(p):
+    '''numexp: numexp '+' numexp
+             | numexp '-' numexp
+             | numexp '*' numexp
+             | numexp '/' numexp
+             | numexp '^' numexp'''
     if p[2] == '+':
         n = Node()
         n.type = '+'
@@ -221,17 +226,16 @@ def p_expression_binop(p):
         n.childrens.append(p[3])
         p[0] = n
 
-
-def p_expression_inumber(p):
-    "expression : INUMBER"
+def p_numexp_inumber(p):
+    "numexp : INUMBER"
     n = Node()
     n.type = 'INUMBER'
     n.val = int(p[1])
     p[0] = n
 
 
-def p_expression_fnumber(p):
-    "expression : FNUMBER"
+def p_numexp_number(p):
+    "numexp : FNUMBER"
     n = Node()
     n.type = 'FNUMBER'
     n.val = float(p[1])
@@ -242,12 +246,14 @@ def p_expression_boolval(p):
     "expression : boolexp"
     p[0] = p[1]
 
-
+    
 
 def p_bool_expression(p):
     '''boolexp : BOOLVAL
-                | expression EQUAL expression
-                | expression NOTEQUAL expression
+                | numexp EQUAL numexp
+                | boolexp EQUAL boolexp
+                | numexp NOTEQUAL numexp
+                | boolexp NOTEQUAL boolexp
                 | numexp GREATER numexp
                 | numexp LESS numexp
                 | numexp GREQUAL numexp
