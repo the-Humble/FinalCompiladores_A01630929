@@ -12,31 +12,35 @@ reserved = {
     "false": "BOOLVAL",
     "if": "IF",
     "else": "ELSE",
+    "elif": "ELIF",
+    "while": "WHILE",
+    "for": "FOR",
     "and": "AND",
-    "or": "OR",
-    "==": "EQUAL",
-    "!=": "NOTEQUAL",
-    ">": "GREATER",
-    "<": "LESS",
-    ">=": "GREQUAL",
-    "<=": "LEQUAL"
+    "or": "OR"
 }
 
 
 tokens = [
-    'NAME', 'INUMBER', 'FNUMBER',
+    'NAME', 'INUMBER', 'FNUMBER', 'EQ', 'NEQ', 'GT', 'LT', 'GET', 'LET'
 ]
 tokens.extend(reserved.values())
 
 literals = ['=', '+', '-', '*', '/', '^', ';', '(', ')', '{', '}']
 
 # Tokens
+t_EQ = r'=='
+t_NEQ = r'!='
+t_GT = r'>'
+t_LT = r'<'
+t_GET = r'>='
+t_LET = r'<='
+
+
 def t_NAME(t):
     r'[a-zA-Z_]+[a-zA-Z0-9]*'  # r'[a-eg-hj-oq-z]'
     if t.value in reserved:
         t.type = reserved[t.value]
     return t
-
 
 def t_FNUMBER(t):
     r'\d+\.\d+'
@@ -71,19 +75,21 @@ lexer = lex.lex()
 
 class Node:
 
-    # childrens = None
+    # children = None
     # type = None
 
     def __init__(self):
-        self.childrens = []
+        self.children = []
         self.type = ''
         self.val = ''
 
     def print(self, lvl=0):
         r = (' ' * lvl) + self.type + ":" + str(self.val)
         print(r)
-        #print(self.childrens)
-        for c in self.childrens:
+        #print(self.children)
+        for c in self.children:
+            if():
+                pass
             c.print(lvl+1)
 
 
@@ -100,7 +106,8 @@ def p_prog(p):
     global abstractTree
     abstractTree = Node()
     abstractTree.type = 'root'
-    abstractTree.childrens.extend(p[1])
+    print(p)
+    abstractTree.children.extend(p[1])
 
 
 def p_statements_recursion(p):
@@ -146,20 +153,38 @@ def p_statement_print(p):
     'statement : PRINT expression ";"'
     n = Node()
     n.type = 'PRINT'
-    n.childrens.append(p[2])
+    n.children.append(p[2])
     p[0] = n
 
+
+def p_statement_if_block(p):
+    "statement : ifblock elseblock"
+    n = Node()
+    n.children.append(p[1])
+    if(p[2] != None):
+        n.children.append(p[2])
+    p[0] = n
 
 def p_statement_if(p):
-    'statement : IF "(" boolexp ")" "{" stmts "}"'
+    'ifblock : IF "(" boolexp ")" "{" stmts "}"'
     n = Node()
     n.type = 'IF'
+    n.children.append(p[3])
     n2 = Node()
-    n2.childrens = p[6]
-    n.childrens.append(p[3])
-    n.childrens.append(n2)
+    n2.children.extend(p[6])
+    n.children.append(n2)
     p[0] = n
 
+def p_statement_else(p):
+    '''elseblock : ELSE "{" stmts "}"
+                 | '''
+    if len(p) >= 4:
+        n = Node()
+        n.type = 'ELSE'
+        n.children.append(p[3])
+        p[0] = n
+    else:
+        pass
 
 def p_statement_assign(p):
     'statement : NAME "=" expression ";"'
@@ -167,63 +192,62 @@ def p_statement_assign(p):
         print("You must declare a variable before using it")
     n = Node()
     n.type = 'ASSIGN'
-    ##n.childrens.append(p[1])
+    ##n.children.append(p[1])
     if p[1] in symbolsTable["table"]:
         n1 = Node()
         n1.type = 'ID'
         n1.val = p[1]
-        n.childrens.append(n1)
+        n.children.append(n1)
     else:
         print("Error undeclared variable")
 
-    n.childrens.append(p[3])
+    n.children.append(p[3])
     p[0] = n
 
 def p_expression_group(p):
-    "expression : '(' expression ')'"
+    '''expression : '(' expression ')'
+                  | '{' expression '}' '''
     p[0] = p[2]
-
-
 
 def p_num_expression(p):
     "expression : numexp"
     p[0] = p[1]
 
 def p_numexp_binop(p):
-    '''numexp: numexp '+' numexp
+    '''numexp : numexp '+' numexp
              | numexp '-' numexp
              | numexp '*' numexp
              | numexp '/' numexp
              | numexp '^' numexp'''
     if p[2] == '+':
         n = Node()
-        n.type = '+'
-        n.childrens.append(p[1])
-        n.childrens.append(p[3])
+        n.type = 'PLUS'
+        n.children.append(p[1])
+        n.children.append(p[3])
         p[0] = n
     elif p[2] == '-':
         n = Node()
-        n.type = '-'
-        n.childrens.append(p[1])
-        n.childrens.append(p[3])
+        n.type = 'MINUS'
+        n.children.append(p[1])
+        n.children.append(p[3])
         p[0] = n
     elif p[2] == '*':
         n = Node()
-        n.type = '*'
-        n.childrens.append(p[1])
-        n.childrens.append(p[3])
+        n.type = 'MULT'
+        n.children.append(p[1])
+        n.children.append(p[3])
         p[0] = n
     elif p[2] == '/':
         n = Node()
-        n.type = '/'
-        n.childrens.append(p[1])
-        n.childrens.append(p[3])
+        n.type = 'DIV'
+        n.children.append(p[1])
+        n.children.append(p[3])
         p[0] = n
     elif p[2] == '^':
         n = Node()
-        n.type = '^'
-        n.childrens.append(p[1])
-        n.childrens.append(p[3])
+        n.type = 'EXP'
+        n.children.append(p[1])
+        n.children.append(p[3])
         p[0] = n
 
 def p_numexp_inumber(p):
@@ -246,72 +270,71 @@ def p_expression_boolval(p):
     "expression : boolexp"
     p[0] = p[1]
 
-    
-
 def p_bool_expression(p):
-    '''boolexp : BOOLVAL
-                | numexp EQUAL numexp
-                | boolexp EQUAL boolexp
-                | numexp NOTEQUAL numexp
-                | boolexp NOTEQUAL boolexp
-                | numexp GREATER numexp
-                | numexp LESS numexp
-                | numexp GREQUAL numexp
-                | numexp LEQUAL numexp
+    "boolexp : BOOLVAL"
+    n = Node()
+    n.type = 'BOOLVAL'
+    n.val = (p[1] == 'true')
+    p[0] = n
+
+def p_bool_comp(p):
+    '''boolexp : numexp EQ numexp
+                | boolexp EQ boolexp
+                | numexp NEQ numexp
+                | boolexp NEQ boolexp
+                | numexp GT numexp
+                | numexp LT numexp
+                | numexp GET numexp
+                | numexp LET numexp
                 | boolexp AND boolexp
                 | boolexp OR boolexp'''
-    if len(p) == 2:
+    if p[2] == '==':
         n = Node()
-        n.type = 'BOOLVAL'
-        n.val = (p[1] == 'true')
-        p[0] = n
-    elif p[2] == '==':
-        n = Node()
-        n.type = '=='
-        n.childrens.append(p[1])
-        n.childrens.append(p[3])
+        n.type = 'EQ'
+        n.children.append(p[1])
+        n.children.append(p[3])
         p[0] = n
     elif p[2] == '!=':
         n = Node()
-        n.type = '!='
-        n.childrens.append(p[1])
-        n.childrens.append(p[3])
+        n.type = 'NEQ'
+        n.children.append(p[1])
+        n.children.append(p[3])
         p[0] = n
     elif p[2] == '>':
         n = Node()
-        n.type = '>'
-        n.childrens.append(p[1])
-        n.childrens.append(p[3])
+        n.type = 'GT'
+        n.children.append(p[1])
+        n.children.append(p[3])
         p[0] = n
     elif p[2] == '<':
         n = Node()
-        n.type = '<'
-        n.childrens.append(p[1])
-        n.childrens.append(p[3])
+        n.type = 'LT'
+        n.children.append(p[1])
+        n.children.append(p[3])
         p[0] = n
     elif p[2] == '>=':
         n = Node()
-        n.type = '>='
-        n.childrens.append(p[1])
-        n.childrens.append(p[3])
+        n.type = 'GET'
+        n.children.append(p[1])
+        n.children.append(p[3])
         p[0] = n
     elif p[2] == '<=':
         n = Node()
-        n.type = '<='
-        n.childrens.append(p[1])
-        n.childrens.append(p[3])
+        n.type = 'LET'
+        n.children.append(p[1])
+        n.children.append(p[3])
         p[0] = n
     elif p[2] == 'and':
         n = Node()
         n.type = 'AND'
-        n.childrens.append(p[1])
-        n.childrens.append(p[3])
+        n.children.append(p[1])
+        n.children.append(p[3])
         p[0] = n
     elif p[2] == 'or':
         n = Node()
         n.type = 'OR'
-        n.childrens.append(p[1])
-        n.childrens.append(p[3])
+        n.children.append(p[1])
+        n.children.append(p[3])
         p[0] = n
 
 
@@ -348,54 +371,97 @@ def genTAC(node):
     global varCounter
     global labelCounter
     if (node.type == "ASSIGN"):
-        print(node.childrens[0].val + " := " + str(genTAC(node.childrens[1])))
+        print(node.children[0].val + " := " + str(genTAC(node.children[1])))
     elif (node.type == "INUMBER"):
         return str(node.val)
     elif (node.type == "FNUMBER"):
         return str(node.val)
-    elif (node.type == "+"):
+    elif (node.type == "BOOLVAL"):
+        return str(node.val)
+    elif (node.type == "PLUS"):
         tempVar = "t" + str(varCounter)
         varCounter = varCounter + 1
         print(tempVar + " := " +
-              genTAC(node.childrens[0]) + " + " + genTAC(node.childrens[1]))
+              genTAC(node.children[0]) + " + " + genTAC(node.children[1]))
         return tempVar
-    elif (node.type == "-"):
+    elif (node.type == "MINUS"):
         tempVar = "t" + str(varCounter)
         varCounter = varCounter + 1
         print(tempVar + " := " +
-              genTAC(node.childrens[0]) + " - " + genTAC(node.childrens[1]))
+              genTAC(node.children[0]) + " - " + genTAC(node.children[1]))
         return tempVar
-    elif (node.type == "*"):
+    elif (node.type == "MULT"):
         tempVar = "t" + str(varCounter)
         varCounter = varCounter + 1
         print(tempVar + " := " +
-              genTAC(node.childrens[0]) + " * " + genTAC(node.childrens[1]))
+              genTAC(node.children[0]) + " * " + genTAC(node.children[1]))
         return tempVar
-    elif (node.type == "/"):
+    elif (node.type == "DIV"):
         tempVar = "t" + str(varCounter)
         varCounter = varCounter + 1
         print(tempVar + " := " +
-              genTAC(node.childrens[0]) + " / " + genTAC(node.childrens[1]))
+              genTAC(node.children[0]) + " / " + genTAC(node.children[1]))
         return tempVar
-    elif (node.type == "^"):
+    elif (node.type == "EXP"):
         tempVar = "t" + str(varCounter)
         varCounter = varCounter + 1
         print(tempVar + " := " +
-              genTAC(node.childrens[0]) + " ^ " + genTAC(node.childrens[1]))
+              genTAC(node.children[0]) + " ^ " + genTAC(node.children[1]))
         return tempVar
+    elif (node.type == "EQ"):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              genTAC(node.children[0]) + " == " + genTAC(node.children[1]))
+    elif (node.type == "NEQ"):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              genTAC(node.children[0]) + " != " + genTAC(node.children[1]))
+    elif (node.type == 'GT'):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              genTAC(node.children[0]) + " > " + genTAC(node.children[1]))
+    elif (node.type == 'LT'):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              genTAC(node.children[0]) + " < " + genTAC(node.children[1]))
+    elif (node.type == 'GET'):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              genTAC(node.children[0]) + " >= " + genTAC(node.children[1]))
+    elif (node.type == 'LET'):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              genTAC(node.children[0]) + " <= " + genTAC(node.children[1]))
+    elif (node.type == 'AND'):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              genTAC(node.children[0]) + " AND " + genTAC(node.children[1]))
+    elif (node.type == 'OR'):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              genTAC(node.children[0]) + " OR " + genTAC(node.children[1]))
     elif (node.type == "PRINT"):
-        print("PRINT " + genTAC(node.childrens[0]))
+        print("PRINT " + genTAC(node.children[0]))
     elif (node.type == "IF"):
         tempVar = "t" + str(varCounter)
         varCounter = varCounter + 1
-        print(tempVar + " := !" + str(node.childrens[0].val))
+        print(tempVar + " := " + 
+            str(genTAC((node.children[0]))))
         tempLabel = "l" + str(labelCounter)
         labelCounter = labelCounter + 1
         print("gotoLabelIf " + tempVar + " " + tempLabel)
-        genTAC(node.childrens[1])
+        genTAC(node.children[1])
         print(tempLabel)
     else:
-        for child in node.childrens:
+        for child in node.children:
             genTAC(child)
 
 
