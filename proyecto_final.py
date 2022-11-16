@@ -255,6 +255,19 @@ def p_statement_elif(p):
     n.children.append(n2)
     p[0] = n
 
+def p_statement_while(p):
+    'statement : WHILE "(" boolexp ")" "{" stmts "}"'
+    n = Node()
+    n.type = 'WHILE'
+    n.children.append(p[3])
+    n2 = Node()
+    n2.children.extend(p[6])
+    n.children.append(n2)
+    p[0] = n
+
+def p_statement_for(p):
+    'statement : FOR "(" statement ";" boolexp ";" statement ")" "{" stmts "}"'
+
 def p_statement_assign(p):
     '''statement : intassign
                        | floatassign
@@ -588,6 +601,16 @@ def genTAC(node):
         tempLabel = "l" + str(labelCounter)
         labelCounter = labelCounter + 1
         print("gotoLabelElif " + tempVar + " " + tempLabel)
+        genTAC(node.children[1])
+        print(tempLabel)
+    elif (node.type == "WHILE"):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              str(genTAC((node.children[0]))))
+        tempLabel = "l" + str(labelCounter)
+        labelCounter = labelCounter + 1
+        print("gotoLabelWhile " + tempVar + " " + tempLabel)
         genTAC(node.children[1])
         print(tempLabel)
     else:

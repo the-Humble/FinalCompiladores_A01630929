@@ -9,3 +9,54 @@ num2 = 13.45;
 int num3 = 14.7;
 int num4;
 num2 = 10;
+
+if (true){
+    int b;
+    b = 0;
+
+    float a;
+    a = 12 + 12;
+    float c;
+
+    while(false or true){
+        int num5 = 15;
+    }
+
+    c = 17.5 - 15;
+
+    int b;
+    b = 3 * 2;
+}
+elif (false or true)
+{
+    int f;
+    boolean z;
+    z = true;
+    f = 18;
+}
+elif (false)
+{
+    int f;
+    boolean z;
+    z = true;
+    f = 18;
+}
+elif (19 < 5)
+{
+    int y;
+    boolean w;
+    w = false;
+    y = 8;
+}
+else 
+{
+    int f;
+    f= 17 + 12;
+}
+
+int b;
+b = 2 ^ 2;
+
+int d;
+d = 17 / 15;
+
