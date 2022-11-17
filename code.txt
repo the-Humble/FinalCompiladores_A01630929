@@ -6,7 +6,7 @@ float num1 = 15.667;
 float num2;
 num2 = 13.45;
 
-int num3 = 14.7;
+int num3 = 14;
 int num4;
 num2 = 10;
 
@@ -52,6 +52,11 @@ else
 {
     int f;
     f= 17 + 12;
+}
+
+int z;
+for (z=19; true or false; z=17+1;){
+    float forloop = 12.3432;
 }
 
 int b;

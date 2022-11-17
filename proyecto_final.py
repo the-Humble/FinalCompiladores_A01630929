@@ -122,7 +122,7 @@ def p_statements_recursion(p):
 
 
 def p_dcl_declare_int(p):
-    '''statement : INTDCL NAME "=" numexp ";"
+    '''statement : INTDCL NAME "=" intexp ";"
                  | INTDCL NAME ";"'''
     if len(p) > 5:
         symbolsTable["table"][p[2]] = {"type": "INT", "value": 0}
@@ -147,7 +147,7 @@ def p_dcl_declare_int(p):
 
 
 def p_statement_declare_float(p):
-    '''statement : FLOATDCL NAME "=" numexp ";"
+    '''statement : FLOATDCL NAME "=" floatexp ";"
                  | FLOATDCL NAME ";"'''
     if len(p) > 5:
         symbolsTable["table"][p[2]] = {"type": "FLOAT", "value": 0}
@@ -270,12 +270,12 @@ def p_statement_for(p):
 
 def p_statement_assign(p):
     '''statement : intassign
-                       | floatassign
-                       | boolassign'''
+                 | floatassign
+                 | boolassign'''
     p[0] = p[1]
 
 def p_statement_intassign(p):
-    'intassign : NAME "=" numexp ";"'
+    'intassign : NAME "=" intexp ";"'
     if p[1] not in symbolsTable["table"]:
         print("You must declare a variable before using it")
     n = Node()
@@ -292,7 +292,7 @@ def p_statement_intassign(p):
     p[0] = n
 
 def p_statement_floatassign(p):
-    'floatassign : NAME "=" numexp ";"'
+    'floatassign : NAME "=" floatexp ";"'
     if p[1] not in symbolsTable["table"]:
         print("You must declare a variable before using it")
     n = Node()
@@ -334,8 +334,50 @@ def p_num_expression(p):
     "expression : numexp"
     p[0] = p[1]
 
-def p_numexp_binop(p):
-    '''numexp : numexp '+' numexp
+def p_num_expression(p):
+    '''numexp : intexp
+              | floatexp'''
+    p[0] = p[1]
+
+def p_intexp_binop(p):
+    '''intexp : intexp '+' intexp
+             | intexp '-' intexp
+             | intexp '*' intexp
+             | intexp '/' intexp
+             | intexp '^' intexp'''
+    if p[2] == '+':
+        n = Node()
+        n.type = 'PLUS'
+        n.children.append(p[1])
+        n.children.append(p[3])
+        p[0] = n
+    elif p[2] == '-':
+        n = Node()
+        n.type = 'MINUS'
+        n.children.append(p[1])
+        n.children.append(p[3])
+        p[0] = n
+    elif p[2] == '*':
+        n = Node()
+        n.type = 'MULT'
+        n.children.append(p[1])
+        n.children.append(p[3])
+        p[0] = n
+    elif p[2] == '/':
+        n = Node()
+        n.type = 'DIV'
+        n.children.append(p[1])
+        n.children.append(p[3])
+        p[0] = n
+    elif p[2] == '^':
+        n = Node()
+        n.type = 'EXP'
+        n.children.append(p[1])
+        n.children.append(p[3])
+        p[0] = n
+
+def p_floatexp_binop(p):
+    '''floatexp : numexp '+' numexp
              | numexp '-' numexp
              | numexp '*' numexp
              | numexp '/' numexp
@@ -371,16 +413,16 @@ def p_numexp_binop(p):
         n.children.append(p[3])
         p[0] = n
 
-def p_numexp_inumber(p):
-    "numexp : INUMBER"
+def p_intexp_inumber(p):
+    "intexp : INUMBER"
     n = Node()
     n.type = 'INUMBER'
     n.val = int(p[1])
     p[0] = n
 
 
-def p_numexp_number(p):
-    "numexp : FNUMBER"
+def p_floatxp_number(p):
+    "floatexp : FNUMBER"
     n = Node()
     n.type = 'FNUMBER'
     n.val = float(p[1])
