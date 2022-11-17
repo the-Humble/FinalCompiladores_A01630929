@@ -265,8 +265,18 @@ def p_statement_while(p):
     n.children.append(n2)
     p[0] = n
 
+
 def p_statement_for(p):
-    'statement : FOR "(" statement ";" boolexp ";" statement ")" "{" stmts "}"'
+    'statement : FOR "(" intassign boolexp ";" intassign ")" "{" stmts "}"'
+    n = Node()
+    n.type = 'FOR'
+    n.children.append(p[3])
+    n.children.append(p[4])
+    n.children.append(p[6])
+    n2 = Node()
+    n2.children.extend(p[9])
+    n.children.append(n2)
+    p[0] = n
 
 def p_statement_assign(p):
     '''statement : intassign
