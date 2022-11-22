@@ -267,14 +267,14 @@ def p_statement_while(p):
 
 
 def p_statement_for(p):
-    'statement : FOR "(" intassign boolexp ";" intassign ")" "{" stmts "}"'
+    'statement : FOR "(" INTDCL intassign boolexp ";" NAME "=" numexp ")" "{" stmts "}"'
     n = Node()
     n.type = 'FOR'
-    n.children.append(p[3])
     n.children.append(p[4])
-    n.children.append(p[6])
+    n.children.append(p[5])
+    n.children.append(p[9])
     n2 = Node()
-    n2.children.extend(p[9])
+    n2.children.extend(p[12])
     n.children.append(n2)
     p[0] = n
 
@@ -664,6 +664,18 @@ def genTAC(node):
         labelCounter = labelCounter + 1
         print("gotoLabelWhile " + tempVar + " " + tempLabel)
         genTAC(node.children[1])
+        print(tempLabel)
+    elif (node.type == "FOR"):
+        tempVar = "t" + str(varCounter)
+        varCounter = varCounter + 1
+        print(tempVar + " := " +
+              str(genTAC(node.children[0])))
+        genTAC(node.children[1])
+        genTAC(node.children[2])
+        tempLabel = "l" + str(labelCounter)
+        labelCounter = labelCounter + 1
+        print("gotoLabelFor " + tempVar + " " + tempLabel)
+        genTAC(node.children[3])
         print(tempLabel)
     else:
         for child in node.children:

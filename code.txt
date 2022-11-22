@@ -54,8 +54,7 @@ else
     f= 17 + 12;
 }
 
-int z;
-for (z=19; true or false; z=17+1;){
+for (int z=19; 19<20; z=17+1){
     float forloop = 12.3432;
 }
 
