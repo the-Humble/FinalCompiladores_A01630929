@@ -120,80 +120,93 @@ def p_statements_recursion(p):
     else:
         p[0] = [stmt]
 
+def p_statement_inline_dcls(p):
+    '''statement : inlineintdcl
+                  | inlinefloatdcl
+                  | inlinebooldcl '''
+    p[0] = p[1]
+
 
 def p_dcl_declare_int(p):
-    '''statement : INTDCL NAME "=" intexp ";"
-                 | INTDCL NAME ";"'''
-    if len(p) > 5:
-        symbolsTable["table"][p[2]] = {"type": "INT", "value": 0}
-        n = Node()
-        n.type = "INT_DCL"
-        n.val = p[2]
-        n2 = Node()
-        n2.type = 'ASSIGN'
-        n3 = Node()
-        n3.type = 'ID'
-        n3.val = p[2]
-        n2.children.append(n3)
-        n2.children.append(p[4])
-        n.children.append(n2)
-        p[0] = n
-    else:
-        symbolsTable["table"][p[2]] = {"type": "INT", "value": 0}
-        n = Node()
-        n.type = "INT_DCL"
-        n.val = p[2]
-        p[0] = n
+    '''statement : INTDCL NAME ";"'''
+    symbolsTable["table"][p[2]] = {"type": "INT", "value": 0}
+    n = Node()
+    n.type = "INT_DCL"
+    n.val = p[2]
+    p[0] = n
 
+def p_dcl_declareinline_int(p):
+    '''inlineintdcl : INTDCL NAME "=" numexp ";"'''
+    symbolsTable["table"][p[2]] = {"type": "INT", "value": 0}
+    n = Node()
+    n.type = "INT_DCL"
+    n.val = p[2]
+    n2 = Node()
+    n2.type = 'ASSIGN'
+    n3 = Node()
+    n3.type = 'ID'
+    n3.val = p[2]
+    n2.children.append(n3)
+    n2.children.append(p[4])
+    n.children.append(n2)
+
+    if str(p[4].val).isnumeric(): 
+        symbolsTable["table"][p[2]]["value"] = p[4].val
+    else:
+        print("Invalid Integer Expression")
+        exit()
+    p[0] = n
+
+def p_statement_declareinline_float(p):
+    '''inlinefloatdcl : FLOATDCL NAME "=" numexp ";"'''
+    symbolsTable["table"][p[2]] = {"type": "FLOAT", "value": 0}
+    n = Node()
+    n.type = "FLOAT_DCL"
+    n.val = p[2]
+    n2 = Node()
+    n2.type = 'ASSIGN'
+    n3 = Node()
+    n3.type = 'ID'
+    n3.val = p[2]
+    n2.children.append(n3)
+    n2.children.append(p[4])
+    n.children.append(n2)
+    symbolsTable["table"][p[2]]["value"] = p[4].val
+    p[0] = n
 
 def p_statement_declare_float(p):
-    '''statement : FLOATDCL NAME "=" floatexp ";"
-                 | FLOATDCL NAME ";"'''
-    if len(p) > 5:
-        symbolsTable["table"][p[2]] = {"type": "FLOAT", "value": 0}
-        n = Node()
-        n.type = "FLOAT_DCL"
-        n.val = p[2]
-        n2 = Node()
-        n2.type = 'ASSIGN'
-        n3 = Node()
-        n3.type = 'ID'
-        n3.val = p[2]
-        n2.children.append(n3)
-        n2.children.append(p[4])
-        n.children.append(n2)
-        p[0] = n
-    else:
-        symbolsTable["table"][p[2]] = {"type": "FLOAT", "value": 0}
-        n = Node()
-        n.type = "FLOAT_DCL"
-        n.val = p[2]
-        p[0] = n
+    '''statement : FLOATDCL NAME ";"'''
+    symbolsTable["table"][p[2]] = {"type": "FLOAT", "value": 0}
+    n = Node()
+    n.type = "FLOAT_DCL"
+    n.val = p[2]
+    p[0] = n
 
+
+def p_statement_declareinline_bool(p):
+    '''inlinebooldcl : BOOLDCL NAME  "="  boolexp ";"'''
+    symbolsTable["table"][p[2]] = {"type": "BOOLEAN", "value": False}
+    n = Node()
+    n.type = "BOOL_DCL"
+    n.val = p[2]
+    n2 = Node()
+    n2.type = 'ASSIGN'
+    n3 = Node()
+    n3.type = 'ID'
+    n3.val = p[2]
+    n2.children.append(n3)
+    n2.children.append(p[4])
+    n.children.append(n2)
+    symbolsTable["table"][p[2]]["value"] = p[4].val
+    p[0] = n
 
 def p_statement_declare_bool(p):
-    '''statement : BOOLDCL NAME "=" boolexp ";"
-                 | BOOLDCL NAME ";"'''
-    if len(p) > 5:
-        symbolsTable["table"][p[2]] = {"type": "BOOLEAN", "value": False}
-        n = Node()
-        n.type = "BOOL_DCL"
-        n.val = p[2]
-        n2 = Node()
-        n2.type = 'ASSIGN'
-        n3 = Node()
-        n3.type = 'ID'
-        n3.val = p[2]
-        n2.children.append(n3)
-        n2.children.append(p[4])
-        n.children.append(n2)
-        p[0] = n
-    else:
-        symbolsTable["table"][p[2]] = {"type": "BOOLEAN", "value": False}
-        n = Node()
-        n.type = "BOOL_DCL"
-        n.val = p[2]
-        p[0] = n
+    '''statement : BOOLDCL NAME ";"'''
+    symbolsTable["table"][p[2]] = {"type": "BOOLEAN", "value": False}
+    n = Node()
+    n.type = "BOOL_DCL"
+    n.val = p[2]
+    p[0] = n
 
 def p_statement_print(p):
     'statement : PRINT expression ";"'
@@ -208,7 +221,9 @@ def p_statement_if_block(p):
     n = Node()
     n.children.append(p[1])
     n.children.append(p[2])
-    n.children.append(p[3])
+    n2 = Node()
+    n2.children.append(p[3])
+    n.children.append(n2)
     p[0] = n
 
 def p_statement_if(p):
@@ -235,7 +250,7 @@ def p_statement_else(p):
 def p_statement_elifrecursive(p):
     '''elifrecursive : elifrecursive elifblock
                      |'''
-    if len(p) == 3:
+    if len(p) >2:
         n = Node()
         if p[1] != None:
             n.children.append(p[1])
@@ -267,54 +282,48 @@ def p_statement_while(p):
 
 
 def p_statement_for(p):
-    'statement : FOR "(" INTDCL intassign boolexp ";" NAME "=" numexp ")" "{" stmts "}"'
+    'statement : FOR "(" inlineintdcl boolexp ";" numassign ")" "{" stmts "}"'
     n = Node()
     n.type = 'FOR'
+    n.children.append(p[3])
     n.children.append(p[4])
-    n.children.append(p[5])
-    n.children.append(p[9])
+    n.children.append(p[6])
     n2 = Node()
-    n2.children.extend(p[12])
+    n2.children.extend(p[9])
     n.children.append(n2)
     p[0] = n
 
 def p_statement_assign(p):
-    '''statement : intassign
-                 | floatassign
+    '''statement : numassign
                  | boolassign'''
     p[0] = p[1]
 
-def p_statement_intassign(p):
-    'intassign : NAME "=" intexp ";"'
+def p_statement_numassign(p):
+    'numassign : NAME "=" numexp ";"'
     if p[1] not in symbolsTable["table"]:
         print("You must declare a variable before using it")
     n = Node()
     n.type = 'ASSIGN'
+    
+    numberType = ''
     ##n.children.append(p[1])
     if p[1] in symbolsTable["table"]:
+        numberType = symbolsTable["table"][p[1]]["type"]
         n1 = Node()
         n1.type = 'ID'
         n1.val = p[1]
         n.children.append(n1)
     else:
         print("Error undeclared variable")
-    n.children.append(p[3])
-    p[0] = n
-
-def p_statement_floatassign(p):
-    'floatassign : NAME "=" floatexp ";"'
-    if p[1] not in symbolsTable["table"]:
-        print("You must declare a variable before using it")
-    n = Node()
-    n.type = 'ASSIGN'
-    ##n.children.append(p[1])
-    if p[1] in symbolsTable["table"]:
-        n1 = Node()
-        n1.type = 'ID'
-        n1.val = p[1]
-        n.children.append(n1)
-    else:
-        print("Error undeclared variable")
+    if numberType == 'FLOAT':
+        symbolsTable["table"][p[1]]["value"] = float(p[3].val)
+    elif numberType == 'INT':
+        if str(p[3].val).isnumeric():
+            symbolsTable["table"][p[1]]["value"] = int(p[3].val)
+        else:
+            print("Invalid Integer Expression")
+            exit()
+    
     n.children.append(p[3])
     p[0] = n
 
@@ -345,94 +354,69 @@ def p_num_expression(p):
     p[0] = p[1]
 
 def p_num_expression(p):
-    '''numexp : intexp
-              | floatexp'''
-    p[0] = p[1]
+    '''numexp : NAME'''
+    n = Node()
+    if p[1] in symbolsTable["table"]:
+        if symbolsTable["table"][p[1]]["type"] == "INT":
+            n.type = "INUMBER"
+            n.val = p[1]
+            p[0] = n
 
-def p_intexp_binop(p):
-    '''intexp : intexp '+' intexp
-             | intexp '-' intexp
-             | intexp '*' intexp
-             | intexp '/' intexp
-             | intexp '^' intexp'''
-    if p[2] == '+':
-        n = Node()
-        n.type = 'PLUS'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
-    elif p[2] == '-':
-        n = Node()
-        n.type = 'MINUS'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
-    elif p[2] == '*':
-        n = Node()
-        n.type = 'MULT'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
-    elif p[2] == '/':
-        n = Node()
-        n.type = 'DIV'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
-    elif p[2] == '^':
-        n = Node()
-        n.type = 'EXP'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
+        elif symbolsTable["table"][p[1]]["type"] == "FLOAT":
+            n.type = "FNUMBER"
+            n.val = p[1]
+            p[0] = n
+    elif p[1] not in symbolsTable["table"] and not type(p[1]) is int or float:
+        print("You must declare a variable before using it")
+        exit()
+    else:
+        p[0] = p[1]
 
-def p_floatexp_binop(p):
-    '''floatexp : numexp '+' numexp
+def p_numexp_binop(p):
+    '''numexp : numexp '+' numexp
              | numexp '-' numexp
              | numexp '*' numexp
              | numexp '/' numexp
              | numexp '^' numexp'''
-    if p[2] == '+':
-        n = Node()
-        n.type = 'PLUS'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
-    elif p[2] == '-':
-        n = Node()
-        n.type = 'MINUS'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
-    elif p[2] == '*':
-        n = Node()
-        n.type = 'MULT'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
-    elif p[2] == '/':
-        n = Node()
-        n.type = 'DIV'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
-    elif p[2] == '^':
-        n = Node()
-        n.type = 'EXP'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
+    n = Node()
+    tempP1 = p[1].val
+    tempP3 = p[3].val
+    if p[1].val in symbolsTable["table"]:
+        tempP1 = symbolsTable["table"][p[1].val]["value"]
 
-def p_intexp_inumber(p):
-    "intexp : INUMBER"
+    if p[3].val in symbolsTable["table"]:
+        tempP3 = symbolsTable["table"][p[3].val]["value"]
+
+    if p[2] == '+':
+        n.type = 'PLUS'
+        n.val = tempP1 + tempP3
+    elif p[2] == '-':
+        n.type = 'MINUS'
+        n.val = tempP1 - tempP3
+    elif p[2] == '*':
+        n.type = 'MULT'
+        n.val = tempP1 * tempP3
+    elif p[2] == '/':
+        n.type = 'DIV'
+        n.val = tempP1 / tempP3
+    elif p[2] == '^':
+        n.type = 'EXP'
+        n.val = tempP1 ** tempP3
+    n.children.append(p[1])
+    n.children.append(p[3])
+    p[0] = n
+
+def p_numexp_inumber(p):
+    '''numexp : INUMBER'''
     n = Node()
     n.type = 'INUMBER'
     n.val = int(p[1])
     p[0] = n
 
 
-def p_floatxp_number(p):
-    "floatexp : FNUMBER"
+
+def p_numexp_fnumber(p):
+    '''numexp : FNUMBER'''
     n = Node()
     n.type = 'FNUMBER'
     n.val = float(p[1])
@@ -461,54 +445,43 @@ def p_bool_comp(p):
                 | numexp LET numexp
                 | boolexp AND boolexp
                 | boolexp OR boolexp'''
+    n = Node()
+
+    tempP1 = p[1].val
+    tempP3 = p[3].val
+    if p[1].val in symbolsTable["table"]:
+        tempP1 = symbolsTable["table"][p[1].val]["value"]
+
+    if p[3].val in symbolsTable["table"]:
+        tempP3 = symbolsTable["table"][p[3].val]["value"]
+
     if p[2] == '==':
-        n = Node()
         n.type = 'EQ'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
+        n.val = tempP1 == tempP3
     elif p[2] == '!=':
-        n = Node()
         n.type = 'NEQ'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
+        n.val = tempP1 != tempP3
     elif p[2] == '>':
-        n = Node()
         n.type = 'GT'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
+        n.val = tempP1 > tempP3
     elif p[2] == '<':
-        n = Node()
         n.type = 'LT'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
+        n.val = tempP1 < tempP3
     elif p[2] == '>=':
-        n = Node()
         n.type = 'GET'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
+        n.val = tempP1 >= tempP3
     elif p[2] == '<=':
-        n = Node()
         n.type = 'LET'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
+        n.val = tempP1 <= tempP3
     elif p[2] == 'and':
-        n = Node()
         n.type = 'AND'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
+        n.val = tempP1 and tempP3
     elif p[2] == 'or':
-        n = Node()
         n.type = 'OR'
-        n.children.append(p[1])
-        n.children.append(p[3])
-        p[0] = n
+        n.val = tempP1 or tempP3
+    n.children.append(p[1])
+    n.children.append(p[3])
+    p[0] = n
 
 
 def p_expression_name(p):
@@ -536,10 +509,13 @@ yacc.parse(content)
 
 
 abstractTree.print()
+
+#TODO: Semantic Ananlysis
+
+
+
 varCounter = 0
 labelCounter = 0
-
-
 def genTAC(node):
     global varCounter
     global labelCounter
@@ -629,11 +605,10 @@ def genTAC(node):
         return tempVar
     elif (node.type == "PRINT"):
         print("PRINT " + genTAC(node.children[0]))
-    elif (node.type == "IF"):
+    elif (node.type == "IF" or node.type == "ELIF"):
         tempVar = "t" + str(varCounter)
         varCounter = varCounter + 1
-        print(tempVar + " := " + 
-            str(genTAC((node.children[0]))))
+        print(tempVar + " := !" + genTAC(node.children[0]))
         tempLabel = "l" + str(labelCounter)
         labelCounter = labelCounter + 1
         print("gotoLabelIf " + tempVar + " " + tempLabel)
@@ -641,41 +616,43 @@ def genTAC(node):
         print(tempLabel)
     elif (node.type == "ELSE"):
         tempLabel = "l" + str(labelCounter)
-        labelCounter = labelCounter + 1
-        print("gotoLabelElse " + tempLabel)
-        genTAC(node.children[1])
-        print(tempLabel)
-    elif (node.type == "ELIF"):
-        tempVar = "t" + str(varCounter)
-        varCounter = varCounter + 1
-        print(tempVar + " := " +
-              str(genTAC((node.children[0]))))
-        tempLabel = "l" + str(labelCounter)
-        labelCounter = labelCounter + 1
-        print("gotoLabelElif " + tempVar + " " + tempLabel)
+        labelCounter = labelCounter
+        print("gotoLabel " + tempLabel)
         genTAC(node.children[1])
         print(tempLabel)
     elif (node.type == "WHILE"):
         tempVar = "t" + str(varCounter)
         varCounter = varCounter + 1
-        print(tempVar + " := " +
-              str(genTAC((node.children[0]))))
         tempLabel = "l" + str(labelCounter)
+        print(tempLabel)
         labelCounter = labelCounter + 1
-        print("gotoLabelWhile " + tempVar + " " + tempLabel)
+        tempLabel = "l" + str(labelCounter)
+        print(tempVar + " := !" + genTAC(node.children[0]))
+        print("gotoLabelIf " + tempVar + " " + tempLabel)
         genTAC(node.children[1])
+        labelCounter = labelCounter - 1
+        tempLabel = "l" + str(labelCounter)
+        print("gotoLabel " + tempLabel)
+        labelCounter = labelCounter + 1
+        tempLabel = "l" + str(labelCounter)
         print(tempLabel)
     elif (node.type == "FOR"):
+        genTAC(node.children[0])
         tempVar = "t" + str(varCounter)
         varCounter = varCounter + 1
-        print(tempVar + " := " +
-              str(genTAC(node.children[0])))
-        genTAC(node.children[1])
-        genTAC(node.children[2])
         tempLabel = "l" + str(labelCounter)
+        print(tempLabel)
         labelCounter = labelCounter + 1
-        print("gotoLabelFor " + tempVar + " " + tempLabel)
+        tempLabel = "l" + str(labelCounter)
+        print(tempVar + " := !" + str(genTAC(node.children[1])))
+        print("gotoLabelIf " + tempVar + " " + tempLabel)
         genTAC(node.children[3])
+        genTAC(node.children[2]) 
+        labelCounter = labelCounter - 1
+        tempLabel = "l" + str(labelCounter)
+        print("gotoLabel " + tempLabel)
+        labelCounter = labelCounter + 1
+        tempLabel = "l" + str(labelCounter)
         print(tempLabel)
     else:
         for child in node.children:
